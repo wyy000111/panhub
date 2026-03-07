@@ -24,20 +24,6 @@ export interface SearchState {
 }
 
 export function useSearch() {
-  // 尝试获取 Pinia store，如果失败则使用本地状态
-  let searchStore: any;
-
-  try {
-    const { useSearchStore } = "~/stores/searchStore";
-    // @ts-ignore - 动态导入，仅在客户端执行
-    if (process.client) {
-      searchStore = useSearchStore();
-    }
-  } catch {
-    // Pinia 未初始化，使用本地状态
-  }
-
-  // 本地状态作为 fallback
   const state = ref<SearchState>({
     loading: false,
     deepLoading: false,
@@ -49,69 +35,29 @@ export function useSearch() {
     merged: {},
   });
 
-  // 使用 store 或本地状态的帮助函数
   const setLoading = (v: boolean) => {
-    if (searchStore) {
-      searchStore.setLoading(v);
-    } else {
-      state.value.loading = v;
-    }
+    state.value.loading = v;
   };
-
   const setDeepLoading = (v: boolean) => {
-    if (searchStore) {
-      searchStore.setDeepLoading(v);
-    } else {
-      state.value.deepLoading = v;
-    }
+    state.value.deepLoading = v;
   };
-
   const setPaused = (v: boolean) => {
-    if (searchStore) {
-      searchStore.setPaused(v);
-    } else {
-      state.value.paused = v;
-    }
+    state.value.paused = v;
   };
-
   const setError = (v: string) => {
-    if (searchStore) {
-      searchStore.setError(v);
-    } else {
-      state.value.error = v;
-    }
+    state.value.error = v;
   };
-
   const setSearched = (v: boolean) => {
-    if (searchStore) {
-      searchStore.setSearched(v);
-    } else {
-      state.value.searched = v;
-    }
+    state.value.searched = v;
   };
-
   const setElapsedMs = (v: number) => {
-    if (searchStore) {
-      searchStore.setElapsedMs(v);
-    } else {
-      state.value.elapsedMs = v;
-    }
+    state.value.elapsedMs = v;
   };
-
   const setTotal = (v: number) => {
-    if (searchStore) {
-      searchStore.setTotal(v);
-    } else {
-      state.value.total = v;
-    }
+    state.value.total = v;
   };
-
   const setMerged = (v: MergedLinks) => {
-    if (searchStore) {
-      searchStore.setMerged(v);
-    } else {
-      state.value.merged = v;
-    }
+    state.value.merged = v;
   };
 
   let searchSeq = 0;
@@ -143,10 +89,9 @@ export function useSearch() {
     setPaused(false);
     setDeepLoading(true);
 
-    // 继续执行深度搜索
-    // mySeq 由外部传入，避免重复递增
+    // 继续执行深度搜索，使用当前 searchSeq（暂停时未递增）
     try {
-      await performDeepSearch(options, mySeq);
+      await performDeepSearch(options, searchSeq);
     } catch (error) {
       // 忽略错误
     } finally {
@@ -455,7 +400,7 @@ export function useSearch() {
         for (const r of resps) {
           if (!r || mySeq !== searchSeq) continue;
           if (r.merged_by_type) {
-            const currentMerged = searchStore ? searchStore.merged : state.value.merged;
+            const currentMerged = state.value.merged;
             const newMerged = mergeMergedByType(
               currentMerged,
               r.merged_by_type
@@ -464,7 +409,7 @@ export function useSearch() {
           }
         }
         // 更新总数
-        const currentMerged = searchStore ? searchStore.merged : state.value.merged;
+        const currentMerged = state.value.merged;
         setTotal(
           Object.values(currentMerged).reduce(
             (sum, arr) => sum + (arr?.length || 0),
@@ -541,20 +486,16 @@ export function useSearch() {
   function resetSearch(): void {
     cancelActiveRequests();
     searchSeq++;
-    if (searchStore) {
-      searchStore.reset();
-    } else {
-      state.value = {
-        loading: false,
-        deepLoading: false,
-        paused: false,
-        error: "",
-        searched: false,
-        elapsedMs: 0,
-        total: 0,
-        merged: {},
-      };
-    }
+    state.value = {
+      loading: false,
+      deepLoading: false,
+      paused: false,
+      error: "",
+      searched: false,
+      elapsedMs: 0,
+      total: 0,
+      merged: {},
+    };
   }
 
   // 复制链接
