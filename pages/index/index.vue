@@ -32,6 +32,7 @@
       v-model="kw"
       :loading="searchState.loading"
       :paused="searchState.paused"
+      :searched="searchState.searched"
       :placeholder="placeholder"
       @search="onSearch"
       @reset="fullReset"
