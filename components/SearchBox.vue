@@ -467,9 +467,16 @@ onMounted(() => {
     font-size: 15px;
   }
 
+  .search-actions {
+    gap: 6px; /* 减小间距以确保按钮居中 */
+  }
+
   .action-btn {
     padding: 8px 10px;
     font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .action-btn.primary .btn-text,
